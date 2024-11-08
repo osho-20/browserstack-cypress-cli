@@ -150,6 +150,8 @@ const nodeRequest = (type, url, data, config) => {
       json: config.headers['Content-Type'] === 'application/json',
     }};
 
+    logger.debug("Options-1: ", options);
+
     request(options, function callback(error, response, body) {
       if(error) {
         logger.info("error in nodeRequest", error);

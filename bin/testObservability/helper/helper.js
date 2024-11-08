@@ -127,6 +127,8 @@ const nodeRequest = (type, url, data, config) => {
       maxAttempts: 2
     }};
 
+		logger.debug("Options: ", options);
+
     if(url === exports.requestQueueHandler.screenshotEventUrl) {
       options.agent = httpsScreenshotsKeepAliveAgent;
     }
