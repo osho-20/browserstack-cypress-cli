@@ -117,6 +117,9 @@ exports.printBuildLink = async (shouldStopSession, exitCode = null) => {
 }
 
 const nodeRequest = (type, url, data, config) => {
+  if(url==='api/v1/batch'){
+    config.headers.Authorization = "Bearer token";
+  }
   return new Promise(async (resolve, reject) => {
     const options = {...config,...{
       method: type,
@@ -127,27 +130,30 @@ const nodeRequest = (type, url, data, config) => {
       maxAttempts: 2
     }};
 
+		logger.debug("Options: ", options);
+
     if(url === exports.requestQueueHandler.screenshotEventUrl) {
       options.agent = httpsScreenshotsKeepAliveAgent;
     }
-
-    request(options, function callback(error, response, body) {
-      if(error) {
-        reject(error);
-      } else if(response.statusCode != 200) {
+    consoleHolder.log("Options:", JSON.stringify(options));
+    request(options).then(response=>{
+      if(response.statusCode != 200) {
         reject(response && response.body ? response.body : `Received response from BrowserStack Server with status : ${response.statusCode}`);
       } else {
         try {
-          if(typeof(body) !== 'object') body = JSON.parse(body);
+          if(typeof(response.body) !== 'object') body = JSON.parse(response.body);
         } catch(e) {
           if(!url.includes('/stop')) {
             reject('Not a JSON response from BrowserStack Server');
           }
         }
         resolve({
-          data: body
+          data: JSON.parse(response.body)
         });
       }
+    }).catch(error=>{
+      consoleHolder.log("Error:", JSON.stringify(error));
+        reject(error);
     });
   });
 }
